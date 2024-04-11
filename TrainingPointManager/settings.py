@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+_r$^l)de6=i+9xe=qymm)usgxp9u*-bzey_m!-g4%=s8oa*s+'
+# SECRET_KEY = 'django-insecure-+_r$^l)de6=i+9xe=qymm)usgxp9u*-bzey_m!-g4%=s8oa*s+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework', 
 ]
 
 MIDDLEWARE = [
@@ -121,3 +122,25 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+import os
+import pyrebase
+from decouple import config as env_config
+SECRET_KEY = env_config("SECRET_KEY")
+
+#Firebase settings
+
+try:
+    config = {
+        'apiKey': os.getenv('FIREBASE_API_KEY'),
+        'authDomain': os.getenv('FIREBASE_AUTH_DOMAIN'),
+        'databaseURL': os.getenv('FIREBASE_DATABASE_URL'),
+        'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET'),
+}
+    
+    firbase = pyrebase.initialize_app(config)
+    auth = firbase.auth()
+
+except Exception as e:
+    raise Exception('Firebase configuration credentials not found.')
