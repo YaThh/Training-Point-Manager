@@ -124,23 +124,3 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-import os
-import pyrebase
-from decouple import config as env_config
-SECRET_KEY = env_config("SECRET_KEY")
-
-#Firebase settings
-
-try:
-    config = {
-        'apiKey': os.getenv('FIREBASE_API_KEY'),
-        'authDomain': os.getenv('FIREBASE_AUTH_DOMAIN'),
-        'databaseURL': os.getenv('FIREBASE_DATABASE_URL'),
-        'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET'),
-}
-    
-    firbase = pyrebase.initialize_app(config)
-    auth = firbase.auth()
-
-except Exception as e:
-    raise Exception('Firebase configuration credentials not found.')
