@@ -59,13 +59,18 @@ class News(BaseModel):
     image = models.ImageField(upload_to='ban_tin/')
     assistant_creator = models.ForeignKey(StudentAssistant, on_delete=models.CASCADE)
 
-
 class Interaction(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     news = models.ForeignKey(News, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
+
+class Like(Interaction):
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('user', 'news')
 
 class Comment(Interaction):
     content = models.CharField(max_length=255)
