@@ -36,7 +36,7 @@ class Grade(BaseModel):
 class Student(User):
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-
+    
 class StudentAssistant(User):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
@@ -58,6 +58,7 @@ class News(BaseModel):
     content = models.TextField()
     image = models.ImageField(upload_to='ban_tin/')
     assistant_creator = models.ForeignKey(StudentAssistant, on_delete=models.CASCADE)
+
 
 class Interaction(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
