@@ -49,6 +49,10 @@ class Activity(BaseModel):
     location = models.CharField(max_length=150)
     description = models.TextField()
     points = models.IntegerField()
+    student = models.ManyToManyField(Student, 'StudentActivity')
+
+    def __str__(self) -> str:
+        return self.name
 
 class Achievement(BaseModel):
     name = models.CharField(max_length=50)
@@ -59,7 +63,7 @@ class Achievement(BaseModel):
 class News(BaseModel):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     content = models.TextField()
-    image = models.ImageField(upload_to='ban_tin/')
+    image = models.ImageField(upload_to='ban_tin/%Y/%m')
     assistant_creator = models.ForeignKey(StudentAssistant, on_delete=models.CASCADE)
 
 class Interaction(BaseModel):
@@ -79,8 +83,6 @@ class Comment(Interaction):
     content = models.CharField(max_length=255)
 
 class StudentActivity(BaseModel):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     STATUS_CHOICES = (
         ('registered', 'Đã đăng ký'),
         ('attended', 'Đã tham gia'),
@@ -98,7 +100,7 @@ class MissingPointReport(BaseModel):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     reason = models.TextField()
-    proof = models.FileField(upload_to='missing_point_proofs/')
+    proof = models.FileField(upload_to='missing_point_proofs/%Y/%m')
     STATUS_CHOICES = (
         ('pending', 'Đang chờ'),
         ('approved', 'Đã duyệt'),
