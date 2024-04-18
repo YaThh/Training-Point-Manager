@@ -40,6 +40,9 @@ class Student(User):
 class StudentAssistant(User):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
+class StudentAffairsOfficer(User):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+
 class Activity(BaseModel):
     name = models.CharField(max_length=100)
     time = models.DateTimeField()
