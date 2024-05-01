@@ -63,7 +63,7 @@ class Achievement(BaseModel):
 class News(BaseModel):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     content = models.TextField()
-    image = models.ImageField(upload_to='ban_tin/%Y/%m')
+    image = models.ImageField(upload_to='news/%Y/%m')
     assistant_creator = models.ForeignKey(StudentAssistant, on_delete=models.CASCADE)
 
 class Interaction(BaseModel):

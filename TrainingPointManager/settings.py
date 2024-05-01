@@ -130,3 +130,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL  = 'TrainingPoint.User'
+
+MEDIA_ROOT = '%s/TrainingPoint/static/' % BASE_DIR
+
+import cloudinary
+
+cloudinary.config(
+    cloud_name="dy1unykph",
+    api_key="238791983534257",
+    api_secret="_J2MkfDJ1DwRe1uAn5TKozXup0U"
+)
