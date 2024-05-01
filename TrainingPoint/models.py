@@ -11,6 +11,7 @@ class User(AbstractUser):
         ('SV', 'Sinh viên'),
     )
     user_type = models.CharField(max_length=4, choices=USER_TYPE)
+    department = models.ForeignKey('Department', on_delete=models.CASCADE, null=True)
 
 class BaseModel(models.Model):
     created_date = models.DateField(auto_now_add=True)
@@ -33,23 +34,14 @@ class Grade(BaseModel):
     def __str__(self) -> str:
         return self.name
 
-class Student(User):
-    grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    
-class StudentAssistant(User):
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-
-class StudentAffairsOfficer(User):
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-
 class Activity(BaseModel):
     name = models.CharField(max_length=100)
     time = models.DateTimeField()
     location = models.CharField(max_length=150)
     description = models.TextField()
     points = models.IntegerField()
-    student = models.ManyToManyField(Student, 'StudentActivity')
+    student = models.ManyToManyField(User, 'StudentActivity')
+    assistant_creator = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return self.name
@@ -64,7 +56,7 @@ class News(BaseModel):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     content = models.TextField()
     image = models.ImageField(upload_to='news/%Y/%m')
-    assistant_creator = models.ForeignKey(StudentAssistant, on_delete=models.CASCADE)
+    assistant_creator = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Interaction(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -90,14 +82,15 @@ class StudentActivity(BaseModel):
         ('missing_point_reported', 'Báo thiếu')
     )
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='registered')
+    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
 
 class TrainingPoint(BaseModel):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     points = models.IntegerField()
 
 class MissingPointReport(BaseModel):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     reason = models.TextField()
     proof = models.FileField(upload_to='missing_point_proofs/%Y/%m')
