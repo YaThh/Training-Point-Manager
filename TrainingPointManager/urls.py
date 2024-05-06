@@ -18,8 +18,18 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from TrainingPoint import views
 from TrainingPoint.admin import admin_site
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register('departments', views.DepartmentViewSet, basename='deparment')
+router.register('grades', views.GradeViewSet, basename='grades')
+router.register('activities', views.ActivityViewSet, basename='activities')
+router.register('news', views.NewsViewSet, basename='news')
+router.register('users', views.UserViewSet, basename='users')
+router.register('comments', views.CommentViewSet, basename='comments')
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('admin/', admin_site.urls),
-    path('', views.index, name='index'),
+    # path('', views.index, name='index'),
 ]

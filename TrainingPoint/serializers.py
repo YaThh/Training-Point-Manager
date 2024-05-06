@@ -27,7 +27,7 @@ class NewsSerializer(ModelSerializer):
         model = News
         fields = '__all__'
     
-class NewsDetailSerializer(ModelSerializer):
+class NewsDetailSerializer(NewsSerializer):
     like = serializers.SerializerMethodField()
 
     def get_like(self, news):
@@ -37,7 +37,7 @@ class NewsDetailSerializer(ModelSerializer):
     
     class Meta:
         model = NewsSerializer.Meta.model
-        fields = NewsSerializer.Meta.fields + ['like']
+        fields = list(NewsSerializer.Meta.fields) + ['like']
 
 class UserSerializer(ModelSerializer):
     
