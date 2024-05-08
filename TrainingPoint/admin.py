@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls.resolvers import URLResolver
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, Group
 
 from .models import *
 
@@ -10,6 +10,7 @@ class TrainingPointManagerAdminSite(admin.AdminSite):
 
 
 admin_site = TrainingPointManagerAdminSite(name='myapp')
+admin_site.register(Group)
 admin_site.register(Permission)
 admin_site.register(Activity)
 admin_site.register(News)
