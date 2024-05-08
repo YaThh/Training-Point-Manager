@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework', 
     'drf_yasg',
+    'oauth2_provider',
     'TrainingPoint.apps.TrainingpointConfig'
 ]
 
@@ -140,3 +141,9 @@ cloudinary.config(
     api_key="238791983534257",
     api_secret="_J2MkfDJ1DwRe1uAn5TKozXup0U"
 )
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+}
