@@ -18,7 +18,9 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from TrainingPoint import views
 from TrainingPoint.admin import admin_site
-from rest_framework import routers
+from rest_framework import routers, permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
 router = routers.DefaultRouter()
 router.register('departments', views.DepartmentViewSet, basename='deparment')
@@ -28,11 +30,33 @@ router.register('news', views.NewsViewSet, basename='news')
 router.register('users', views.UserViewSet, basename='users')
 router.register('comments', views.CommentViewSet, basename='comments')
 
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Course API",
+        default_version='v1',
+        description="APIs for CourseApp",
+        contact=openapi.Contact(email="2051012112thuan@ou.edu.vn"),
+        license=openapi.License(name="thuan"),
+        ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
+
+
 urlpatterns = [
     path('', include(router.urls)),
     path('admin/', admin_site.urls),
-    path('o/', include('oauth2_provider.urls',
-        namespace='oauth2_provider')),
+    path('o/', include('oauth2_provider.urls',namespace='oauth2_provider')),
 
+    #Swagger
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$',
+    schema_view.without_ui(cache_timeout=0),
+    name='schema-json'),
+    re_path(r'^swagger/$',
+    schema_view.with_ui('swagger', cache_timeout=0),
+    name='schema-swagger-ui'),
+    re_path(r'^redoc/$',
+    schema_view.with_ui('redoc', cache_timeout=0),
+    name='schema-redoc')
     # path('', views.index, name='index'),
 ]

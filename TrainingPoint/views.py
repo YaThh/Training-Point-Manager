@@ -27,6 +27,31 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
     serializer_class = ActivitySerializer
     pagination_class = ActivityPaginator
 
+    def get_permissions(self):
+        if self.action in ['create_activity']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    @action(methods=['post'], detail=False, url_path='create')
+    def create_activity(self, request):
+
+        if request.user.user_type != 'TLSV':
+            return Response({'Lỗi':'Không có quyền tạo' })
+        
+        request.data['assistant_creator'] = request.user.id
+
+        activity = ActivitySerializer(data=request.data)
+        activity.is_valid(raise_exception=True)
+        activity.save()
+        
+        return Response(activity.data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['get'], detail=True)
+    def news(self, request, pk):
+        news = self.get_object().news_set.filter(active=True)
+        return Response(NewsSerializer(news, many=True, context={
+            'request': request
+        }).data, status=status.HTTP_200_OK)
 
 class NewsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     queryset = News.objects.all()
@@ -34,9 +59,24 @@ class NewsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     pagination_class = NewsPaginator
 
     def get_permissions(self):
-        if self.action in ['add_comment', 'like']:
+        if self.action in ['add_comment', 'like', 'create_news']:
             return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny]
+        return [permissions.AllowAny()]
+    
+    
+    @action(methods=['post'], detail=False, url_path='create')
+    def create_news(self, request):
+        if request.user.user_type != 'TLSV':
+            return Response({'Lỗi':'Không có quyền tạo' })
+        
+        request.data['assistant_creator'] = request.user.id
+
+        news = NewsSerializer(data=request.data)
+        news.is_valid(raise_exception=True)
+        news.save()
+        
+        return Response(news.data, status=status.HTTP_201_CREATED)
+
     
     @action(methods=['post'], detail=True, url_path='comments')
     def add_comment(self, request, pk):

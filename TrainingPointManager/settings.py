@@ -28,6 +28,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 SECRET_KEY = "django-insecure-+_r$^l)de6=i+9xe=qymm)usgxp9u*-bzey_m!-g4%=s8oa*s+"
+CLIENT_ID = 'a2gLbkZonQxh9Cdzcpvp8jxJLcbeqNOR9CVYGykY'
+CLIENT_SECRET = '9M2rtHyB4PFYsX16FtFKLP5AX8BvVJueq8R3Tl7qLyXclCNYKRVlQzT9HNA9u6WJ2Dfjay7Wm0iE6EdadA5hKm6Aj7fXAyFA6N0TSB9w4RMPppIXSO8gB00520eqgkoq'
+
 
 # Application definition
 

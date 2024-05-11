@@ -16,6 +16,7 @@ class User(AbstractUser):
 class BaseModel(models.Model):
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
+    active = models.BooleanField(default=True)
 
     class Meta:
         abstract = True
@@ -48,6 +49,7 @@ class Activity(BaseModel):
 
 class Achievement(BaseModel):
     name = models.CharField(max_length=50)
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return self.name
@@ -55,7 +57,7 @@ class Achievement(BaseModel):
 class News(BaseModel):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     content = models.TextField()
-    image = models.ImageField(upload_to='news/%Y/%m')
+    image = models.ImageField(upload_to='news/%Y/%m', null=True)
     assistant_creator = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Interaction(BaseModel):
@@ -82,11 +84,9 @@ class StudentActivity(BaseModel):
         ('missing_point_reported', 'Báo thiếu')
     )
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='registered')
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
 
 class TrainingPoint(BaseModel):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     points = models.IntegerField()
 
 class MissingPointReport(BaseModel):

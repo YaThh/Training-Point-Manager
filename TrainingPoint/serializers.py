@@ -15,7 +15,7 @@ class GradeSerializer(ModelSerializer):
 class ActivitySerializer(ModelSerializer):
     class Meta:
         model = Activity
-        fields = ['id', 'name', 'time', 'location', 'description', 'points', 'student']
+        fields = ['id', 'name', 'time', 'location', 'description', 'points', 'student', 'assistant_creator']
 
 class AchievementSerializer(ModelSerializer):
     class Meta:
@@ -43,7 +43,7 @@ class UserSerializer(ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'avatar', 'user_type', 'email', 'password']
+        fields = ['username', 'password', 'email', 'first_name', 'last_name', 'avatar', 'department',]
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -55,6 +55,9 @@ class UserSerializer(ModelSerializer):
         user = User(**data)
         user.set_password(data['password'])
         user.save()
+
+        #Set diem ren luyen = 0 khi tao moi
+        TrainingPoint.objects.create(student=user, points=0)
 
         return user
     
