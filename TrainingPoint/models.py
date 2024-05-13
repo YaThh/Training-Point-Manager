@@ -10,8 +10,10 @@ class User(AbstractUser):
         ('TLSV', 'Trợ lý sinh viên'),
         ('SV', 'Sinh viên'),
     )
-    user_type = models.CharField(max_length=4, choices=USER_TYPE, default='SV')
+    user_type = models.CharField(max_length=4, choices=USER_TYPE)
     department = models.ForeignKey('Department', on_delete=models.CASCADE, null=True)
+    grade = models.ForeignKey('Grade', on_delete=models.SET_NULL, null=True, blank=True)
+
 
 class BaseModel(models.Model):
     created_date = models.DateField(auto_now_add=True)

@@ -43,7 +43,7 @@ class UserSerializer(ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['username', 'password', 'email', 'first_name', 'last_name', 'avatar', 'department',]
+        fields = ['username', 'password', 'email', 'first_name', 'last_name', 'avatar', 'department', 'user_type', 'grade']
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -51,13 +51,19 @@ class UserSerializer(ModelSerializer):
         }
     
     def create(self, valdiated_data):
-        data = valdiated_data.copy()
-        user = User(**data)
-        user.set_password(data['password'])
+        user_type = valdiated_data.pop('user_type')
+        user = User(**valdiated_data)
+        user.set_password(valdiated_data['password'])
+        user.user_type = user_type
+        user.save()
+
+        if user_type != 'SV':
+            valdiated_data['grade'] = None
         user.save()
 
         #Set diem ren luyen = 0 khi tao moi
-        TrainingPoint.objects.create(student=user, points=0)
+        if user_type == 'SV':
+            TrainingPoint.objects.create(student=user, points=0)
 
         return user
     

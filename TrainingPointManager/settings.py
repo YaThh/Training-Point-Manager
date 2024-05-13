@@ -28,8 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 SECRET_KEY = "django-insecure-+_r$^l)de6=i+9xe=qymm)usgxp9u*-bzey_m!-g4%=s8oa*s+"
-CLIENT_ID = 'a2gLbkZonQxh9Cdzcpvp8jxJLcbeqNOR9CVYGykY'
-CLIENT_SECRET = '9M2rtHyB4PFYsX16FtFKLP5AX8BvVJueq8R3Tl7qLyXclCNYKRVlQzT9HNA9u6WJ2Dfjay7Wm0iE6EdadA5hKm6Aj7fXAyFA6N0TSB9w4RMPppIXSO8gB00520eqgkoq'
+CLIENT_ID = 'yswGwWgT90QZcN06DwtGxRamNGIL7MkLslCU53LY'
+CLIENT_SECRET = '8GMHMInXj80oY9Ij1TKq4ijljTksvySMYTsuk7e2krKVnZp608GTgaq3B5XHHki50Un8Lh8RZUutcghg8PXH4topaUrIEDVY34H3K6vDuCWP8gCNM5EM3j4q9F9UAewk'
 
 
 # Application definition
@@ -126,7 +126,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+import os
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
