@@ -22,6 +22,35 @@ class GradeViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
+class ClassificationViewSet(viewsets.ViewSet, generics.ListAPIView):
+    queryset = Classification.objects.all()
+    serializer_class = ClassificationSerializer
+
+    @action(methods=['get'], detail=False, url_path='calculate/(?P<user_id>\d+)')
+    def calculate_classification(self, request, user_id=None):
+        user = User.objects.get(id=user_id)
+        total_points = TrainingPoint.objects.get(student=user).points
+
+        if 0 <= total_points <= 20:
+            classification_name = 'kém'
+        elif 20 < total_points <= 40:
+            classification_name = 'yếu'
+        elif 40 < total_points <= 60:
+            classification_name = 'trung bình'
+        elif 60 < total_points <= 80:
+            classification_name = 'khá'
+        elif 80 < total_points <= 90:
+            classification_name = 'giỏi'
+        else:
+            classification_name = 'xuất sắc'
+        
+        classification = Classification.objects.get(student=user)
+        classification.name = classification_name
+        classification.save()
+
+        return Response(ClassificationSerializer(classification).data)
+
+
 class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
@@ -85,6 +114,10 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
         training_points = TrainingPoint.objects.get(student=student)
         training_points.points += activity.points
         training_points.save()
+
+        classification_view = ClassificationViewSet()
+        classification_response = classification_view.calculate_classification(request, student.id)
+        
         return Response({'message': 'Điểm danh thành công'}, status=status.HTTP_200_OK)
 
 

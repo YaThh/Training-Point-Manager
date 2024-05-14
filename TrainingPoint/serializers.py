@@ -67,6 +67,7 @@ class UserSerializer(ModelSerializer):
         #Set diem ren luyen = 0 khi tao moi
         if user_type == 'SV':
             TrainingPoint.objects.create(student=user, points=0)
+            Classification.objects.create(student=user, name='Kém')
 
         return user
     
