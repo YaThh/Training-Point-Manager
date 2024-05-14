@@ -28,8 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 SECRET_KEY = "django-insecure-+_r$^l)de6=i+9xe=qymm)usgxp9u*-bzey_m!-g4%=s8oa*s+"
-CLIENT_ID = 'yswGwWgT90QZcN06DwtGxRamNGIL7MkLslCU53LY'
-CLIENT_SECRET = '8GMHMInXj80oY9Ij1TKq4ijljTksvySMYTsuk7e2krKVnZp608GTgaq3B5XHHki50Un8Lh8RZUutcghg8PXH4topaUrIEDVY34H3K6vDuCWP8gCNM5EM3j4q9F9UAewk'
+CLIENT_ID = 'nc8CQSIIqxnoB3Wkk7DE4b55nJckdLSRV509hQm1'
+CLIENT_SECRET = 'We0o3MCGtanh1JFXDoF9Kjng6SKFm4LR3IP7D9q1G9fMo5gQ0zltwMDYGK0Hh9zijI4wpWcCRK4dHs9nEscyCtKuFcrnpNpkn0YAbh5nFMsXalfYPZ6Cx0Kylc7cUhtJ'
 
 
 # Application definition
@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'rest_framework', 
     'drf_yasg',
     'oauth2_provider',
-    'TrainingPoint.apps.TrainingpointConfig'
+    'TrainingPoint.apps.TrainingpointConfig',
 ]
 
 MIDDLEWARE = [
@@ -151,3 +151,4 @@ REST_FRAMEWORK = {
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     )
 }
+

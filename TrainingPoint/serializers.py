@@ -15,11 +15,14 @@ class GradeSerializer(ModelSerializer):
 class ActivitySerializer(ModelSerializer):
     class Meta:
         model = Activity
-        fields = ['id', 'name', 'time', 'location', 'description', 'points', 'student', 'assistant_creator']
+        fields = ['id', 'name', 'time','location', 'description', 'points', 'assistant_creator']
 
-class AchievementSerializer(ModelSerializer):
+        time = serializers.DateTimeField(format='%Y-%m-%d %H:%M', input_formats=['%Y-%m-%d %H:%M'])
+        expiration_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M', input_formats=['%Y-%m-%d %H:%M'])
+
+class ClassificationSerializer(ModelSerializer):
     class Meta:
-        model = Achievement
+        model = Classification
         fields = '__all__'
 
 class NewsSerializer(ModelSerializer):

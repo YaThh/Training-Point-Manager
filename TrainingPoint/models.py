@@ -43,13 +43,13 @@ class Activity(BaseModel):
     location = models.CharField(max_length=150)
     description = models.TextField()
     points = models.IntegerField()
-    student = models.ManyToManyField(User, 'StudentActivity')
+    student = models.ManyToManyField(User, 'StudentActivity', blank=True)
     assistant_creator = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return self.name
 
-class Achievement(BaseModel):
+class Classification(BaseModel):
     name = models.CharField(max_length=50)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -57,7 +57,6 @@ class Achievement(BaseModel):
         return self.name
 
 class News(BaseModel):
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     content = models.TextField()
     image = models.ImageField(upload_to='news/%Y/%m', null=True)
     assistant_creator = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -82,9 +81,10 @@ class StudentActivity(BaseModel):
     STATUS_CHOICES = (
         ('registered', 'Đã đăng ký'),
         ('attended', 'Đã tham gia'),
-        ('point_awarded', 'Đã nhận điểm'),
         ('missing_point_reported', 'Báo thiếu')
     )
+    student = models.ForeignKey(User, on_delete=models.CASCADE) 
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='registered')
 
 class TrainingPoint(BaseModel):

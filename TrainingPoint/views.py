@@ -28,7 +28,7 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
     pagination_class = ActivityPaginator
 
     def get_permissions(self):
-        if self.action in ['create_activity']:
+        if self.action in ['create_activity', 'register', 'attend']:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
@@ -45,13 +45,48 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
         activity.save()
         
         return Response(activity.data, status=status.HTTP_201_CREATED)
+    
+    @action(methods=['post'], detail=True, url_path='register')
+    def register(self, request, pk):
+        activity = self.get_object()
+        student = request.user
 
-    @action(methods=['get'], detail=True)
-    def news(self, request, pk):
-        news = self.get_object().news_set.filter(active=True)
-        return Response(NewsSerializer(news, many=True, context={
-            'request': request
-        }).data, status=status.HTTP_200_OK)
+        #Kiem tra user da dang ki
+        existing_registration = StudentActivity.objects.filter(student=student, activity=activity).first()
+
+        if existing_registration:
+            return Response(
+                {'Lỗi': 'Sinh viên đã đăng kí hoạt động này'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        student_activity = StudentActivity.objects.create(student=student, activity=activity, status='registered')
+        activity.student.add(student)
+        
+        return Response({'Đăng ký thành công'}, status=status.HTTP_201_CREATED)
+    
+    @action(methods=['post'], detail=True, url_path='attend')
+    def attend(self, request, pk):
+        activity = self.get_object()
+        student = request.user
+
+        try:
+            student_activity = StudentActivity.objects.get(student=student, activity=activity)
+            print(student_activity.status)
+        except StudentActivity.DoesNotExist:
+            return Response({'Lỗi': 'Sinh viên chưa đăng ký hoạt động này'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if student_activity.status == 'attended':
+            return Response({'Lỗi': 'Sinh viên đã tham gia hoạt động này'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        student_activity.status = 'attended'
+        student_activity.save()
+
+        training_points = TrainingPoint.objects.get(student=student)
+        training_points.points += activity.points
+        training_points.save()
+        return Response({'message': 'Điểm danh thành công'}, status=status.HTTP_200_OK)
+
 
 class NewsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     queryset = News.objects.all()
