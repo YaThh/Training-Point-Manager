@@ -137,7 +137,7 @@ class NewsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     
     @action(methods=['post'], detail=False, url_path='create')
     def create_news(self, request):
-        if request.user.user_type != 'TLSV':
+        if request.user.user_type not in ['TLSV', 'CV']:
             return Response({'Lỗi':'Không có quyền tạo' })
         
         request.data['assistant_creator'] = request.user.id
@@ -262,19 +262,33 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     parser_classes = [parsers.MultiPartParser]
+    permission_classes = [IsAuthenticatedOrCreate] #Cho phep anonymous user tao tai khoan
 
-    def get_permissions(self):
-        if self.action.__eq__('get_current'):
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
+    # def get_permissions(self):
+    #     if self.action.__eq__('get_current'):
+    #         return [permissions.IsAuthenticated()]
+    #     return [permissions.AllowAny()]
     
     @action(methods=['get'], detail=False, url_path='current')
     def get_current(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        user_type = serializer.validated_data['user_type']
+        if not request.user.is_anonymous and request.user.user_type != 'CV' and user_type == 'TLSV':
+            return Response({'Lỗi': 'Bạn không có quyền tạo người dùng này.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        user = serializer.save()
+            
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
 class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [OwnerPermission]
-    
+   

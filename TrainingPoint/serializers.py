@@ -55,18 +55,22 @@ class UserSerializer(ModelSerializer):
         extra_kwargs = {
             'password': {
                 'write_only': True
-            }
+            },
+            'avatar': {'required': False, 'allow_null': True}
         }
     
-    def create(self, valdiated_data):
-        user_type = valdiated_data.pop('user_type')
-        user = User(**valdiated_data)
-        user.set_password(valdiated_data['password'])
+    def create(self, validated_data):
+        user_type = validated_data.pop('user_type')
+        avatar = validated_data.pop('avatar', None)
+
+        user = User(**validated_data)
+        user.set_password(validated_data['password'])
         user.user_type = user_type
+        user.avatar = avatar
         user.save()
 
         if user_type != 'SV':
-            valdiated_data['grade'] = None
+            validated_data['grade'] = None
         user.save()
 
         #Set diem ren luyen = 0 khi tao moi
