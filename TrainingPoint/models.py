@@ -51,7 +51,7 @@ class Activity(BaseModel):
 
 class Classification(BaseModel):
     name = models.CharField(max_length=50)
-    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    student = models.OneToOneField(User, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return self.name

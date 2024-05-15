@@ -50,7 +50,6 @@ class ClassificationViewSet(viewsets.ViewSet, generics.ListAPIView):
             classification.save()
         
         
-
         return Response(ClassificationSerializer(classification).data)
 
 
@@ -95,7 +94,7 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
         student_activity = StudentActivity.objects.create(student=student, activity=activity, status='registered')
         activity.student.add(student)
         
-        return Response({'Đăng ký thành công'}, status=status.HTTP_201_CREATED)
+        return Response({'message':'Đăng ký thành công'}, status=status.HTTP_201_CREATED)
     
     @action(methods=['post'], detail=True, url_path='attend')
     def attend(self, request, pk):
@@ -177,6 +176,7 @@ class MissingPointReportViewSet(viewsets.ViewSet, generics.ListAPIView, generics
                                 generics.RetrieveAPIView, generics.UpdateAPIView):
     serializer_class = MissingPointReportSerializer
     pagination_class = MissingPointReportPaginator
+    permission_classes = IsAuthenticatedOrCreate
 
     def get_queryset(self):
         user = self.request.user
@@ -186,7 +186,7 @@ class MissingPointReportViewSet(viewsets.ViewSet, generics.ListAPIView, generics
             return MissingPointReport.objects.filter(active=True)
         
     def get_permissions(self):
-        if self.action in ['']:
+        if self.action in ['create', 'pending_reports', 'approve_report', 'reject_report']:
             return [permissions.IsAuthenticated()]
         elif self.action == 'list':
             return [permissions.IsAuthenticated()]
@@ -258,16 +258,101 @@ class MissingPointReportViewSet(viewsets.ViewSet, generics.ListAPIView, generics
 
         return Response({'message': 'Report thiếu điểm đã bị từ chối'}, status=status.HTTP_200_OK)
 
+class TraingingPointStatisticsViewSet(viewsets.ViewSet):
+
+    def get_permissions(self):
+        if self.action in ['by_grade', 'by_department', 'by_classification']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+
+    @action(methods=['get'], detail=False, url_path='by-grade')
+    def by_grade(self, request):
+        if request.user.user_type != 'CV':
+            return Response({'Lỗi': 'Bạn không có quyền truy cập'}, status=status.HTTP_403_FORBIDDEN)
+        
+        grades = Grade.objects.all()
+        data = []
+        for grade in grades:
+            total_points = 0
+            user_count = 0
+            classifications = {}
+            for user in User.objects.filter(grade=grade, user_type='SV'):
+                total_points += TrainingPoint.objects.get(student=user).points
+                user_count += 1
+
+                classification, created = Classification.objects.get_or_create(student=user, defaults={'name': 'Chưa phân loại'})
+                if not created:
+                    classification.save()
+                if classification.name in classifications:
+                    classifications[classification.name] += 1
+                else:
+                    classifications[classification.name] = 1
+            data.append({
+                'grade': grade.name,
+                'total_points': total_points,
+                'user_count': user_count,
+                'classifications': classifications 
+            })
+        return Response(data)
+    
+    @action(methods=['get'], detail=False, url_path='by-department')
+    def by_department(self, request):
+        if request.user.user_type != 'CV':
+            return Response({'Lỗi': 'Bạn không có quyền truy cập'}, status=status.HTTP_403_FORBIDDEN)
+        
+        departments = Department.objects.all()
+        data = []
+        for department in departments:
+            total_points = 0
+            user_count = 0
+            classifications = {}
+            for user in User.objects.filter(department=department, user_type='SV'):
+                try:
+                    total_points += TrainingPoint.objects.get(student=user).points
+                    user_count += 1
+                    classification, created = Classification.objects.get_or_create(student=user, defaults={'name': 'Chưa phân loại'})
+                    if not created:
+                        classification.save()
+                    if classification.name in classifications:
+                        classifications[classification.name] += 1
+                    else:
+                        classifications[classification.name] = 1
+                except TrainingPoint.DoesNotExist:
+                    pass
+            data.append({
+                'department': department.name,
+                'total_points': total_points,
+                'user_count': user_count,
+                'classifications': classifications 
+            })
+        return Response(data)
+    
+    @action(methods=['get'], detail=False, url_path='by-classification')
+    def by_classification(self, request):
+        if request.user.user_type != 'CV':
+            return Response({'Lỗi': 'Bạn không có quyền truy cập'}, status=status.HTTP_403_FORBIDDEN)
+        
+        classifications = Classification.objects.all()
+        data = []
+        for classification in classifications:
+            user_count = User.objects.filter(classification=classification, user_type='SV').count()
+            data.append({
+                'classification': classification.name,
+                'user_count': user_count
+            })
+        return Response(data)
+
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     parser_classes = [parsers.MultiPartParser]
     permission_classes = [IsAuthenticatedOrCreate] #Cho phep anonymous user tao tai khoan
 
-    # def get_permissions(self):
-    #     if self.action.__eq__('get_current'):
-    #         return [permissions.IsAuthenticated()]
-    #     return [permissions.AllowAny()]
+    def get_permissions(self):
+        if self.action.__eq__('get_current'):
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
     
     @action(methods=['get'], detail=False, url_path='current')
     def get_current(self, request):
@@ -277,7 +362,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         user_type = serializer.validated_data['user_type']
         if not request.user.is_anonymous and request.user.user_type != 'CV' and user_type == 'TLSV':
             return Response({'Lỗi': 'Bạn không có quyền tạo người dùng này.'}, status=status.HTTP_403_FORBIDDEN)

@@ -30,6 +30,7 @@ router.register('news', views.NewsViewSet, basename='news')
 router.register('users', views.UserViewSet, basename='users')
 router.register('comments', views.CommentViewSet, basename='comments')
 router.register('missing-points-reports', views.MissingPointReportViewSet, basename='missing-points-report')
+router.register('training-point-statistics', views.TraingingPointStatisticsViewSet, basename='training-point-statistics')
 
 schema_view = get_schema_view(
     openapi.Info(
