@@ -41,6 +41,11 @@ class NewsDetailSerializer(NewsSerializer):
     class Meta:
         model = NewsSerializer.Meta.model
         fields = list(NewsSerializer.Meta.fields) + ['like']
+class MissingPointReportSerializer(ModelSerializer):
+    class Meta:
+        model = MissingPointReport
+        fields = ['id', 'student', 'activity','reason', 'proof', 'status']
+        read_only_fields = ['student', 'status']
 
 class UserSerializer(ModelSerializer):
     

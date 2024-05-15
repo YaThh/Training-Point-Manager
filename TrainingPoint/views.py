@@ -44,9 +44,12 @@ class ClassificationViewSet(viewsets.ViewSet, generics.ListAPIView):
         else:
             classification_name = 'xuất sắc'
         
-        classification = Classification.objects.get(student=user)
-        classification.name = classification_name
-        classification.save()
+        classification, created= Classification.objects.get_or_create(student=user, defaults={"name": classification_name})
+        if not created:
+            classification.name = classification_name
+            classification.save()
+        
+        
 
         return Response(ClassificationSerializer(classification).data)
 
@@ -117,7 +120,7 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView):
 
         classification_view = ClassificationViewSet()
         classification_response = classification_view.calculate_classification(request, student.id)
-        
+
         return Response({'message': 'Điểm danh thành công'}, status=status.HTTP_200_OK)
 
 
@@ -170,6 +173,91 @@ class NewsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
             'request': request
         }).data, status=status.HTTP_200_OK)
 
+class MissingPointReportViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView,
+                                generics.RetrieveAPIView, generics.UpdateAPIView):
+    serializer_class = MissingPointReportSerializer
+    pagination_class = MissingPointReportPaginator
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type == 'SV':
+            return MissingPointReport.objects.filter(student=user)
+        elif user.user_type == 'TLSV' or user.user_type == 'CV':
+            return MissingPointReport.objects.filter(active=True)
+        
+    def get_permissions(self):
+        if self.action in ['']:
+            return [permissions.IsAuthenticated()]
+        elif self.action == 'list':
+            return [permissions.IsAuthenticated()]
+        else:
+            return [permissions.AllowAny()]
+        
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        activity = serializer.validated_data['activity']
+        student = request.user
+
+        try:
+            student_activity = StudentActivity.objects.get(student=student, activity=activity)
+        except StudentActivity.DoesNotExist:
+            return Response({'Lỗi': 'Bạn chưa đăng kí hoạt động này'}, status=status.HTTP_400_BAD_REQUEST)
+
+        student_activity.status = 'missing_point_reported'
+        student_activity.save()
+
+        serializer.save(student=student) 
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(methods=['get'], detail=False, url_path='pending')
+    def pending_reports(self, request):
+        if request.user.user_type not in ['TLSV', 'CV']:
+            return Response({'Lỗi': 'Bạn không có quyền truy cập'}, status=status.HTTP_403_FORBIDDEN)
+        
+        reports = MissingPointReport.objects.filter(status='pending')
+        serializer = self.get_serializer(reports, many=True)
+        return Response(serializer.data)
+    
+    @action(methods=['put'], detail=True, url_path='approve')
+    def approve_report(self, request, pk):
+        if request.user.user_type not in ['TLSV', 'CV']:
+            return Response({'Lỗi': 'Bạn không có quyền truy cập'}, status=status.HTTP_403_FORBIDDEN)
+        
+        report = self.get_object()
+        if report.status != 'pending':
+            return Response({'Lỗi': 'Report không trong trạng thái chờ'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        report.status = 'approved'
+        report.save()
+
+        student_activity = StudentActivity.objects.get(student=report.student, activity=report.activity)
+        student_activity.status = 'attended'
+        student_activity.save()
+
+        training_points = TrainingPoint.objects.get(student=report.student)
+        training_points.points += report.activity.points
+        training_points.save()
+
+        return Response({'message': 'Report thiếu điểm đã được duyệt'}, status=status.HTTP_200_OK)
+    
+    @action(methods=['put'], detail=True, url_path='reject')
+    def reject_report(self, request, pk):
+        if request.user.user_type not in ['TLSV', 'CV']:
+            return Response({'Lỗi': 'Bạn không có quyền truy cập'}, status=status.HTTP_403_FORBIDDEN)
+        
+        report = self.get_object()
+        if report.status != 'pending':
+            return Response({'Lỗi': 'Report không trong trạng thái chờ'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        report.status = 'rejected'
+        report.save()
+
+        return Response({'message': 'Report thiếu điểm đã bị từ chối'}, status=status.HTTP_200_OK)
+
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -182,7 +270,8 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     
     @action(methods=['get'], detail=False, url_path='current')
     def get_current(self, request):
-        return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateAPIView):
     queryset = Comment.objects.all()

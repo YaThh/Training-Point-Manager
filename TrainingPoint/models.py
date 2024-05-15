@@ -95,7 +95,8 @@ class MissingPointReport(BaseModel):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     reason = models.TextField()
-    proof = models.FileField(upload_to='missing_point_proofs/%Y/%m')
+    # proof = models.FileField(upload_to='missing_point_proofs/%Y/%m')
+    proof = models.TextField()
     STATUS_CHOICES = (
         ('pending', 'Đang chờ'),
         ('approved', 'Đã duyệt'),
